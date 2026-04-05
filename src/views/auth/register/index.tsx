@@ -8,6 +8,7 @@ import {
 import { register, sendRegisterEmailCode } from "@/services/auth";
 import type { RegisterForm } from "@/types/auth";
 import { useNavigate, Link } from "react-router-dom";
+import { encryptAES } from "@/utils/crypto";
 import style from "./index.module.scss";
 import classNames from "classnames/bind";
 import { message } from "@/bridges/messageBridge";
@@ -59,7 +60,11 @@ const Register: FC = () => {
     startSubmitTransition(async () => {
       try {
         const { email, password, emailCode } = values;
-        await register({ email, password, emailCode });
+        await register({
+          email: encryptAES(email),
+          password: encryptAES(password),
+          emailCode,
+        });
         message.success("注册成功，请登录");
         navigate("/auth/login", { replace: true });
       } catch {

@@ -11,6 +11,7 @@ import { getLoginCaptcha, login } from "@/services/auth";
 import { useTokenStore } from "@/stores/token";
 import { useUserStore } from "@/stores/user";
 import type { LoginForm } from "@/types/auth";
+import { encryptAES } from "@/utils/crypto";
 import style from "./index.module.scss";
 import classNames from "classnames/bind";
 
@@ -68,7 +69,9 @@ const Login: FC = () => {
       }
       try {
         const { user, accessToken, refreshToken } = await login({
-          ...values,
+          email: encryptAES(values.email),
+          password: encryptAES(values.password),
+          captchaCode: values.captchaCode,
           captchaId,
         });
         setTokens({ accessToken, refreshToken });

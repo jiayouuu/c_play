@@ -2,15 +2,16 @@
  * @Author: 桂佳囿
  * @Date: 2025-11-14 23:42:58
  * @LastEditors: 桂佳囿
- * @LastEditTime: 2026-04-05 11:32:31
+ * @LastEditTime: 2026-04-05 22:18:04
  * @Description: 响应数据类型定义
  */
 
-// 响应数据结构
-export interface ResponseData<T = any> {
-  code: number;
-  msg: string;
-  data: T;
+// 错误响应数据结构
+export interface ErrorResponseData {
+  statusCode: number;
+  timestamp: string;
+  path: string;
+  message: string;
 }
 
 // 分页数据结构

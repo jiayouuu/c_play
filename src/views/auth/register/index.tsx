@@ -94,12 +94,12 @@ const Register: FC = () => {
               name="emailCode"
               rules={[
                 { required: true, message: "请输入邮箱验证码" },
-                { len: 6, message: "验证码长度应为 6 位" },
+                { len: 6, message: "验证码长度应为6位" },
               ]}
             >
               <Input
                 prefix={<SecurityScanOutlined />}
-                placeholder="6 位验证码"
+                placeholder="邮箱验证码"
                 maxLength={6}
               />
             </Form.Item>

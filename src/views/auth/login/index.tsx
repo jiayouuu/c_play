@@ -33,8 +33,7 @@ const Login: FC = () => {
       captchaId: nextId,
       captchaImage: nextImage,
       expiresIn,
-    } =
-      await getLoginCaptcha();
+    } = await getLoginCaptcha();
     setCaptchaId(nextId);
     setCaptchaImage(nextImage);
     setCaptchaExpiresIn(expiresIn);
@@ -105,7 +104,17 @@ const Login: FC = () => {
 
           <Form.Item
             name="password"
-            rules={[{ required: true, message: "请输入密码" }]}
+            rules={[
+              { required: true, message: "请输入密码" },
+              {
+                min: 6,
+                message: "密码至少6个字符",
+              },
+              {
+                max: 20,
+                message: "密码最多20个字符",
+              },
+            ]}
           >
             <Input.Password prefix={<LockOutlined />} placeholder="密码" />
           </Form.Item>
@@ -113,7 +122,13 @@ const Login: FC = () => {
           <div style={{ display: "flex", gap: "8px" }}>
             <Form.Item
               name="captchaCode"
-              rules={[{ required: true, message: "请输入验证码！" }]}
+              rules={[
+                { required: true, message: "请输入验证码！" },
+                {
+                  len: 4,
+                  message: "验证码长度应为4位",
+                },
+              ]}
             >
               <Input
                 prefix={<SafetyCertificateOutlined />}

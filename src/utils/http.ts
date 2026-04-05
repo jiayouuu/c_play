@@ -2,7 +2,7 @@
  * @Author: 桂佳囿
  * @Date: 2025-07-14 09:24:21
  * @LastEditors: 桂佳囿
- * @LastEditTime: 2026-04-05 11:33:55
+ * @LastEditTime: 2026-04-05 22:35:58
  * @Description: HTTP 请求封装
  */
 
@@ -16,14 +16,15 @@ import { useTokenStore } from "@/stores/token";
 import { message } from "@/bridges/messageBridge";
 import { requestCanceler, genRequestKey } from "@/utils/requestCanceler";
 import { navigate } from "@/bridges/navigateBridge";
-import type { ResponseData } from "@/types/response";
+import type { ErrorResponseData } from "@/types/response";
 
 const http = axios.create({
   baseURL: `${import.meta.env.VITE_API_HOST}${import.meta.env.VITE_API_PREFIX}`,
   timeout: 5000,
 });
 
-const defaultErrorMessage = "服务异常，请稍后重试";
+const defaultInternalErrorMessage = "服务异常，请稍后重试";
+const defaultUnauthorizedMessage = "登录状态已过期，请重新登录";
 
 http.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
@@ -44,25 +45,12 @@ http.interceptors.request.use(
 );
 
 http.interceptors.response.use(
-  (response: AxiosResponse<ResponseData>) => {
-    const { clearToken } = useTokenStore.getState();
+  (response: AxiosResponse) => {
     const key = response.config.__requestKey;
     if (key) requestCanceler.remove(key);
-    const { code, msg, data } = response.data;
-    if (code === 401) {
-      message.error("登录状态已过期，请重新登录");
-      requestCanceler.cancelAll();
-      clearToken();
-      navigate("/auth/login", { replace: true });
-      return Promise.reject(response.data);
-    }
-    if (!(200 <= code && code < 300)) {
-      message.error(msg || defaultErrorMessage);
-      return Promise.reject(response.data);
-    }
-    return data;
+    return response.data;
   },
-  (error: AxiosError) => {
+  (error: AxiosError<ErrorResponseData>) => {
     const { clearToken } = useTokenStore.getState();
     const key = error.config?.__requestKey;
     if (key) requestCanceler.remove(key);
@@ -70,15 +58,17 @@ http.interceptors.response.use(
     if (error.code === "ERR_CANCELED") {
       return Promise.reject(error);
     }
+    const { message: errorMsg } = error.response?.data || {};
     // 未授权，跳转登录
     if (error.status === 401) {
-      message.error("登录状态已过期，请重新登录");
+      message.error(errorMsg || defaultUnauthorizedMessage);
       requestCanceler.cancelAll();
       clearToken();
       navigate("/auth/login", { replace: true });
       return Promise.reject(error);
     }
-    message.error(defaultErrorMessage);
+    // 其他错误
+    message.error(errorMsg || defaultInternalErrorMessage);
     return Promise.reject(error);
   },
 );

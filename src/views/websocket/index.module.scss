@@ -1,0 +1,37 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.logPanel {
+  height: 360px;
+  overflow: auto;
+  background: #0f172a;
+  color: #e2e8f0;
+  border-radius: 8px;
+  padding: 12px;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+.logItem {
+  margin: 0;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.15);
+  word-break: break-all;
+}
+
+.logItem:last-child {
+  border-bottom: none;
+}
+
+.muted {
+  color: #64748b;
+}

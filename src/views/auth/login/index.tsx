@@ -1,4 +1,4 @@
-import { type FC, useEffect, useState } from "react";
+import { type FC, useEffect, useState, useTransition } from "react";
 import { Form, Input, Button, Typography } from "antd";
 import { message } from "@/bridges/messageBridge";
 import { useNavigate, Link } from "react-router-dom";
@@ -25,13 +25,19 @@ const Login: FC = () => {
   const setUser = useUserStore((s) => s.setUser);
   const [captchaImage, setCaptchaImage] = useState("");
   const [captchaId, setCaptchaId] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+  const [captchaExpiresIn, setCaptchaExpiresIn] = useState(0);
+  const [submitting, startSubmitTransition] = useTransition();
 
   const loadCaptcha = async () => {
-    const { captchaId: nextId, captchaImage: nextImage } =
+    const {
+      captchaId: nextId,
+      captchaImage: nextImage,
+      expiresIn,
+    } =
       await getLoginCaptcha();
     setCaptchaId(nextId);
     setCaptchaImage(nextImage);
+    setCaptchaExpiresIn(expiresIn);
     form.setFieldValue("captchaCode", "");
   };
 
@@ -47,26 +53,33 @@ const Login: FC = () => {
     void loadCaptchaSafely();
   }, []);
 
-  const onFinish = async (values: LoginFormValues) => {
-    if (!captchaId) {
-      await loadCaptchaSafely();
-      return;
-    }
-    try {
-      setSubmitting(true);
-      const { user, accessToken, refreshToken } = await login({
-        ...values,
-        captchaId,
-      });
-      setTokens({ accessToken, refreshToken });
-      setUser(user);
-      message.success("登录成功");
-      navigate("/", { replace: true });
-    } catch {
-      await loadCaptchaSafely();
-    } finally {
-      setSubmitting(false);
-    }
+  useEffect(() => {
+    if (!captchaExpiresIn || captchaExpiresIn <= 0) return;
+    const timer = window.setTimeout(() => {
+      void loadCaptchaSafely();
+    }, captchaExpiresIn * 1000);
+    return () => window.clearTimeout(timer);
+  }, [captchaId, captchaExpiresIn]);
+
+  const onFinish = (values: LoginFormValues) => {
+    startSubmitTransition(async () => {
+      if (!captchaId) {
+        await loadCaptchaSafely();
+        return;
+      }
+      try {
+        const { user, accessToken, refreshToken } = await login({
+          ...values,
+          captchaId,
+        });
+        setTokens({ accessToken, refreshToken });
+        setUser(user);
+        message.success("登录成功");
+        navigate("/", { replace: true });
+      } catch {
+        await loadCaptchaSafely();
+      }
+    });
   };
 
   return (

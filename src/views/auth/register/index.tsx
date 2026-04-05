@@ -1,4 +1,4 @@
-import { type FC, useEffect, useMemo, useState } from "react";
+import { type FC, useEffect, useMemo, useState, useTransition } from "react";
 import { Form, Input, Button, Typography } from "antd";
 import {
   SecurityScanOutlined,
@@ -20,8 +20,8 @@ const Register: FC = () => {
   const [form] = Form.useForm<RegisterFormValues>();
   const navigate = useNavigate();
   const [countdown, setCountdown] = useState(0);
-  const [submitting, setSubmitting] = useState(false);
-  const [sendingCode, setSendingCode] = useState(false);
+  const [submitting, startSubmitTransition] = useTransition();
+  const [sendingCode, startSendCodeTransition] = useTransition();
 
   const email = Form.useWatch("email", form);
   const canSendCode = useMemo(
@@ -41,29 +41,31 @@ const Register: FC = () => {
     try {
       await form.validateFields(["email"]);
       if (!email) return;
-      setSendingCode(true);
-      await sendRegisterEmailCode({ email });
-      setCountdown(60);
-      message.success("邮箱验证码已发送");
+      startSendCodeTransition(async () => {
+        try {
+          await sendRegisterEmailCode({ email });
+          setCountdown(60);
+          message.success("邮箱验证码已发送");
+        } catch {
+          return;
+        }
+      });
     } catch {
       return;
-    } finally {
-      setSendingCode(false);
     }
   };
 
-  const onFinish = async (values: RegisterFormValues) => {
-    try {
-      setSubmitting(true);
-      const { email, password, emailCode } = values;
-      await register({ email, password, emailCode });
-      message.success("注册成功，请登录");
-      navigate("/auth/login", { replace: true });
-    } catch {
-      return;
-    } finally {
-      setSubmitting(false);
-    }
+  const onFinish = (values: RegisterFormValues) => {
+    startSubmitTransition(async () => {
+      try {
+        const { email, password, emailCode } = values;
+        await register({ email, password, emailCode });
+        message.success("注册成功，请登录");
+        navigate("/auth/login", { replace: true });
+      } catch {
+        return;
+      }
+    });
   };
 
   return (

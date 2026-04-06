@@ -2,7 +2,7 @@
  * @Author: 桂佳囿
  * @Date: 2026-04-04 16:59:56
  * @LastEditors: 桂佳囿
- * @LastEditTime: 2026-04-04 18:31:56
+ * @LastEditTime: 2026-04-06 23:35:28
  * @Description: websocket 工具类单例
  */
 import {
@@ -11,7 +11,6 @@ import {
   type IMessage,
   type StompHeaders,
 } from "@stomp/rx-stomp";
-import SockJS from "sockjs-client";
 import {
   BehaviorSubject,
   Observable,
@@ -71,7 +70,7 @@ export class WebSocketService {
 
   private constructor() {
     this.client = new RxStomp();
-    const wsHost = `${import.meta.env.VITE_API_HOST}${import.meta.env.VITE_API_PREFIX}/ws`;
+    const wsUrl = import.meta.env.VITE_WS_HOST;
     this.client.configure({
       beforeConnect: async () => {
         const token = this.getCurrentToken();
@@ -88,7 +87,7 @@ export class WebSocketService {
             token,
           },
           webSocketFactory: () =>
-            new SockJS(`${wsHost}?token=${encodeURIComponent(token)}`),
+            new WebSocket(`${wsUrl}?token=${encodeURIComponent(token)}`),
         });
       },
       reconnectDelay: 5000,

@@ -65,18 +65,12 @@ const WebSocketView: FC = () => {
 
   useEffect(() => {
     let broadcastAbort: AbortController | undefined;
-    let tickAbort: AbortController | undefined;
     let privateAbort: AbortController | undefined;
 
     const init = async () => {
       broadcastAbort = websocketService.subscribe({
         destination: "/topic/ws/broadcast",
         callback: (msg) => pushLog("broadcast", msg),
-      });
-
-      tickAbort = websocketService.subscribe({
-        destination: "/topic/ws/tick",
-        callback: (msg) => pushLog("tick", msg),
       });
 
       privateAbort = websocketService.subscribe({
@@ -89,7 +83,6 @@ const WebSocketView: FC = () => {
 
     return () => {
       broadcastAbort?.abort();
-      tickAbort?.abort();
       privateAbort?.abort();
     };
   }, []);
@@ -188,7 +181,7 @@ const WebSocketView: FC = () => {
         </Form>
       </Card>
 
-      <Card title="消息流（broadcast + tick + private）">
+      <Card title="消息流（broadcast + private）">
         <div className={cx("logPanel")}>
           {logs.length === 0 ? (
             <p className={cx("muted")}>暂无消息，等待服务器推送...</p>

@@ -2,7 +2,7 @@
  * @Author: 桂佳囿
  * @Date: 2026-04-04 16:59:56
  * @LastEditors: 桂佳囿
- * @LastEditTime: 2026-04-06 23:35:28
+ * @LastEditTime: 2026-04-07 00:13:37
  * @Description: websocket 工具类单例
  */
 import {
@@ -84,10 +84,9 @@ export class WebSocketService {
         this.client.configure({
           connectHeaders: {
             Authorization: authToken,
-            token,
           },
           webSocketFactory: () =>
-            new WebSocket(`${wsUrl}?token=${encodeURIComponent(token)}`),
+            new WebSocket(`${wsUrl}`),
         });
       },
       reconnectDelay: 5000,

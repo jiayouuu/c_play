@@ -2,7 +2,7 @@
  * @Author: 桂佳囿
  * @Date: 2025-11-10 10:01:49
  * @LastEditors: 桂佳囿
- * @LastEditTime: 2026-04-06 13:37:55
+ * @LastEditTime: 2026-04-07 17:26:20
  * @Description: 鉴权服务
  */
 
@@ -21,6 +21,7 @@ const API = {
   register: "/auth/register",
   login: "/auth/login",
   refreshToken: "/auth/refresh",
+  logout: "/auth/logout",
 };
 
 export const sendRegisterEmailCode = (params: {
@@ -43,4 +44,8 @@ export const login = (params: LoginForm): Promise<AuthResponse> => {
 
 export const refreshToken = (refreshToken: string): Promise<AuthTokens> => {
   return http.post(API.refreshToken, { refreshToken }, { public: true });
+};
+
+export const logout = (refreshToken: string): Promise<{ message: string }> => {
+  return http.post(API.logout, { refreshToken });
 };

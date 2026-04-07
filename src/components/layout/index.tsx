@@ -2,7 +2,7 @@
  * @Author: 桂佳囿
  * @Date: 2025-12-24 13:33:27
  * @LastEditors: 桂佳囿
- * @LastEditTime: 2026-04-05 11:25:13
+ * @LastEditTime: 2026-04-07 17:34:30
  * @Description: 应用布局组件
  */
 import { useState, type FC } from "react";
@@ -16,6 +16,8 @@ import {
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useUserStore } from "@/stores/user";
 import { useTokenStore } from "@/stores/token";
+import { logout } from "@/services/auth";
+import { message } from "@/bridges/messageBridge";
 
 const { Header, Sider, Content } = Layout;
 
@@ -27,11 +29,17 @@ const AppLayout: FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, clearUser } = useUserStore();
-  const { clearToken } = useTokenStore();
-  const handleLogout = () => {
-    clearToken();
-    clearUser();
-    navigate("/auth/login", { replace: true });
+  const { clearToken, refreshToken } = useTokenStore();
+  const handleLogout = async (): Promise<void> => {
+    try {
+      const { message: logoutMsg } = await logout(refreshToken);
+      message.success(logoutMsg);
+      clearToken();
+      clearUser();
+      navigate("/auth/login", { replace: true });
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
   };
 
   const menuItems = [
